@@ -1,5 +1,6 @@
 package com.nachtman.orderservice.service;
 
+import com.nachtman.orderservice.kafka.OrderProducer;
 import com.nachtman.orderservice.model.Item;
 import com.nachtman.orderservice.model.Order;
 import com.nachtman.orderservice.repository.OrderRepository;
@@ -15,9 +16,11 @@ public class OrderService {
 
 
     private final OrderRepository orderRepository;
+    private final OrderProducer orderProducer;
 
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository, OrderProducer orderProducer) {
         this.orderRepository = orderRepository;
+        this.orderProducer = orderProducer;
     }
 
     public Optional<Order> getByOrderId(String order_id) {
@@ -34,7 +37,8 @@ public class OrderService {
                 Instant.now(),
                 Instant.now()
         );
-        return orderRepository.save(oder);
+        orderProducer.send(oder);
+        return oder;
     }
 
     public List<Order> getAllOrders() {
